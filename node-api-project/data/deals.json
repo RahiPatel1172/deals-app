@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "title": "Logitech Mouse",
+    "price": 29.99,
+    "description": "Wireless mouse with ergonomic design"
+  },
+  {
+    "id": 2,
+    "title": "Mechanical Keyboard",
+    "price": 89.99,
+    "description": "RGB mechanical keyboard with blue switches"
+  }
+] 

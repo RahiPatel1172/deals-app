@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deals App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .deal {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .deal:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .deal h3 {
+            margin-top: 0;
+        }
+        .price {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .category {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #3498db;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        .form-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #27ae60;
+        }
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-container {
+            flex: 1;
+        }
+        .category-filter {
+            width: 200px;
+        }
+        #search {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        .success {
+            color: #2ecc71;
+            margin-top: 10px;
+        }
+        .no-deals {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        @media (max-width: 600px) {
+            .filters {
+                flex-direction: column;
+            }
+            .category-filter {
+                width: 100%;
+            }
+        }
+        .auth-container {
+            max-width: 400px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .auth-toggle {
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .auth-toggle:hover {
+            color: #333;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Deals App</h1>
+        
+        <!-- Auth Forms -->
+        <div id="authForms">
+            <div id="loginForm" class="auth-container">
+                <h2>Login</h2>
+                <form id="login" class="auth-form">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <p class="auth-toggle" onclick="toggleAuthForms()">Need an account? Register</p>
+            </div>
+            
+            <div id="registerForm" class="auth-container hidden">
+                <h2>Register</h2>
+                <form id="register" class="auth-form">
+                    <input type="text" id="registerUsername" placeholder="Username" required>
+                    <input type="email" id="registerEmail" placeholder="Email" required>
+                    <input type="password" id="registerPassword" placeholder="Password" required>
+                    <button type="submit">Register</button>
+                </form>
+                <p class="auth-toggle" onclick="toggleAuthForms()">Already have an account? Login</p>
+            </div>
+        </div>
+        
+        <!-- Main Content (hidden until authenticated) -->
+        <div id="mainContent" class="hidden">
+            <div class="form-container">
+                <h2>Add New Deal</h2>
+                <form id="dealForm">
+                    <div class="form-group">
+                        <label for="title">Title:</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price:</label>
+                        <input type="number" id="price" name="price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category:</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Books">Books</option>
+                            <option value="Home">Home</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea id="description" name="description" required></textarea>
+                    </div>
+                    <button type="submit" id="submitButton">Add Deal</button>
+                    <div id="formMessage"></div>
+                </form>
+            </div>
+
+            <div class="filters">
+                <div class="search-container">
+                    <input type="text" id="search" placeholder="Search deals...">
+                </div>
+                <div class="category-filter">
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fashion">Fashion</option>
+                        <option value="Books">Books</option>
+                        <option value="Home">Home</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">Loading deals...</div>
+            <div id="deals"></div>
+            <div id="noDeals" class="no-deals" style="display: none;">No deals found</div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        
+        // Auth Functions
+        function toggleAuthForms() {
+            document.getElementById('loginForm').classList.toggle('hidden');
+            document.getElementById('registerForm').classList.toggle('hidden');
+        }
+        
+        async function login(email, password) {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    currentUser = data.user;
+                    localStorage.setItem('token', data.token);
+                    document.getElementById('authForms').classList.add('hidden');
+                    document.getElementById('mainContent').classList.remove('hidden');
+                    loadDeals();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed');
+            }
+        }
+        
+        async function register(username, email, password) {
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Registration successful! Please login.');
+                    toggleAuthForms();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Registration failed');
+            }
+        }
+        
+        // Event Listeners
+        document.getElementById('login').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            login(email, password);
+        });
+        
+        document.getElementById('register').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            register(username, email, password);
+        });
+        
+        // Check for existing token on page load
+        const token = localStorage.getItem('token');
+        if (token) {
+            // Verify token and get user data
+            fetch('/api/auth/verify', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.user) {
+                    currentUser = data.user;
+                    document.getElementById('authForms').classList.add('hidden');
+                    document.getElementById('mainContent').classList.remove('hidden');
+                    loadDeals();
+                }
+            })
+            .catch(() => {
+                localStorage.removeItem('token');
+            });
+        }
+        
+        // DOM Elements
+        const dealForm = document.getElementById('dealForm');
+        const submitButton = document.getElementById('submitButton');
+        const formMessage = document.getElementById('formMessage');
+        const dealsContainer = document.getElementById('deals');
+        const loadingElement = document.getElementById('loading');
+        const noDealsElement = document.getElementById('noDeals');
+        const searchInput = document.getElementById('search');
+        const categoryFilter = document.getElementById('categoryFilter');
+
+        // Function to show loading state
+        function showLoading() {
+            loadingElement.style.display = 'block';
+            dealsContainer.style.display = 'none';
+            noDealsElement.style.display = 'none';
+        }
+
+        // Function to hide loading state
+        function hideLoading() {
+            loadingElement.style.display = 'none';
+            dealsContainer.style.display = 'block';
+        }
+
+        // Function to display deals
+        function displayDeals(deals) {
+            dealsContainer.innerHTML = '';
+            if (deals.length === 0) {
+                noDealsElement.style.display = 'block';
+                return;
+            }
+            noDealsElement.style.display = 'none';
+            deals.forEach(deal => {
+                const dealElement = document.createElement('div');
+                dealElement.className = 'deal';
+                dealElement.innerHTML = `
+                    <h3>${deal.title}</h3>
+                    <span class="category">${deal.category}</span>
+                    <p>${deal.description}</p>
+                    <p class="price">$${deal.price}</p>
+                `;
+                dealsContainer.appendChild(dealElement);
+            });
+        }
+
+        // Function to show message
+        function showMessage(message, type) {
+            formMessage.textContent = message;
+            formMessage.className = type;
+            setTimeout(() => {
+                formMessage.textContent = '';
+                formMessage.className = '';
+            }, 3000);
+        }
+
+        // Handle form submission
+        dealForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitButton.disabled = true;
+            
+            const formData = {
+                title: document.getElementById('title').value,
+                price: parseFloat(document.getElementById('price').value),
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const response = await fetch('/api/deals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showMessage('Deal added successfully!', 'success');
+                    dealForm.reset();
+                    loadDeals();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.message || 'Error adding deal', 'error');
+                }
+            } catch (error) {
+                showMessage('Error adding deal', 'error');
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        // Function to fetch deals
+        async function loadDeals() {
+            showLoading();
+            try {
+                const response = await fetch('/api/deals');
+                const deals = await response.json();
+                displayDeals(deals);
+            } catch (error) {
+                showMessage('Error fetching deals', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Function to filter deals
+        function filterDeals(deals) {
+            const searchTerm = searchInput.value.toLowerCase();
+            const category = categoryFilter.value;
+            
+            return deals.filter(deal => {
+                const matchesSearch = 
+                    deal.title.toLowerCase().includes(searchTerm) ||
+                    deal.description.toLowerCase().includes(searchTerm);
+                const matchesCategory = !category || deal.category === category;
+                return matchesSearch && matchesCategory;
+            });
+        }
+
+        // Handle search and category filter
+        function handleFilters() {
+            loadDeals().then(() => {
+                const deals = Array.from(dealsContainer.children).map(deal => ({
+                    title: deal.querySelector('h3').textContent,
+                    category: deal.querySelector('.category').textContent,
+                    description: deal.querySelector('p').textContent,
+                    price: parseFloat(deal.querySelector('.price').textContent.replace('$', ''))
+                }));
+                const filteredDeals = filterDeals(deals);
+                displayDeals(filteredDeals);
+            });
+        }
+
+        searchInput.addEventListener('input', handleFilters);
+        categoryFilter.addEventListener('change', handleFilters);
+
+        // Initial load
+        loadDeals();
+    </script>
+</body>
+</html> 
